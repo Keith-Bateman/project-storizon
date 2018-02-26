@@ -78,10 +78,4 @@ public class login extends Window {
 		
 		add(vbox);
 	}
-	
-	public static void main(String[] args) {
-		Gtk.init(args);
-		new login();
-		Gtk.main();
-	}
 }
