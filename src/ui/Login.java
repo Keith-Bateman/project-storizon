@@ -2,7 +2,6 @@ package ui;
 
 import org.gnome.gdk.*;
 import org.gnome.gtk.*;
-import org.gnome.gtk.Window;
 
 public class Login extends org.gnome.gtk.Window {                                                   
         
@@ -14,7 +13,7 @@ public class Login extends org.gnome.gtk.Window {
                                                                                                          
         initUI();                                                                                        
                                                                                                          
-        connect(new Window.DeleteEvent() {
+        connect(new org.gnome.gtk.Window.DeleteEvent() {
         	public boolean onDeleteEvent(Widget source, Event event) {                
                 Gtk.mainQuit();                                                                          
                 return false;
