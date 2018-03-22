@@ -6,7 +6,7 @@
 			<attribute name="ignore_optional_problems" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.2"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry exported="true" kind="lib" path="libs/gtk-4.1.jar" sourcepath="libs/gtk-4.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/mysql-connector-java-5.1.41-bin.jar" sourcepath="libs/mysql-connector-java-5.1.41-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
