@@ -5,7 +5,7 @@ import ui.*;
 public class Controller {                                                                                
 	public static void main(String[] args) {
 		Gtk.init(args);                                                                                  
-		new ui.Login();                                                                                     
+		new ui.Inventory();                                                                                     
 		Gtk.main();                                                                                   
 	}                                                                                                    
 }	
