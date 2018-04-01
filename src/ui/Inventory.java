@@ -2,10 +2,14 @@ package ui;
 
 import org.gnome.gdk.*;
 import org.gnome.gtk.*;
+import db.*;
 
 public class Inventory extends org.gnome.gtk.Window {
+	public Database data;
 	
-	public Inventory() {
+	public Inventory(Database db) {
+		data = db;
+		
 		setTitle("Inventory");
 		
 		initUI();                                                                                        
@@ -89,6 +93,46 @@ public class Inventory extends org.gnome.gtk.Window {
 		menuBar.append(fileItem);
 		menuBar.append(viewItem);
 		menuBar.append(forecastItem);
-		vbox.packStart(menuBar,  false,  false,  3);
+		
+		/* This is the rather complicated way in which the datatable is displayed */
+		TreeView displaytable;
+		ListStore tablemodel;
+		TreeIter row;
+		CellRendererText renderer;
+		TreeViewColumn column;
+		DataColumnString[] colnames = new DataColumnString[data.datatable.get(0).length];
+		
+		//Statusbar statusbar = new Statusbar();
+		
+		for (int i = 0; i < colnames.length; i++) {
+			colnames[i] = new DataColumnString();
+		}
+		
+		tablemodel = new ListStore(colnames);
+		
+		for (int r = 0; r < data.datatable.size()-1; r++) {
+			row = tablemodel.appendRow();
+			for (int c = 0; c < data.datatable.get(r).length; c++) {
+				tablemodel.setValue(row, colnames[c], data.datatable.get(r+1)[c]);
+			}
+		}
+		
+		displaytable = new TreeView(tablemodel);
+		
+		for (int i = 0; i < colnames.length; i++) {
+			column = displaytable.appendColumn();
+			column.setTitle(data.datatable.get(0)[i]);
+			renderer = new CellRendererText(column);
+			renderer.setText(colnames[i]);
+		}
+		
+		displaytable.connect(new TreeView.RowActivated() {
+			public void onRowActivated(TreeView treeview, TreePath treepath, TreeViewColumn treeviewcolumn) {
+				//Do something?
+			}
+		});
+		
+		vbox.packStart(menuBar,  false,  false,  0);
+		vbox.add(displaytable);
 	}
 }
