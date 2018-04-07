@@ -1,11 +1,17 @@
 package ui;
 
+import javax.swing.JFileChooser;
+import java.util.*;
+
 import org.gnome.gdk.*;
 import org.gnome.gtk.*;
+
+import ctrl.Controller;
 import db.*;
 
 public class Inventory extends org.gnome.gtk.Window {
 	public Database data;
+	private TreeView displayTable;
 	
 	public Inventory(Database db) {
 		data = db;
@@ -13,17 +19,61 @@ public class Inventory extends org.gnome.gtk.Window {
 		setTitle("Inventory");
 		
 		initUI();                                                                                        
-        
+        /*
         connect(new org.gnome.gtk.Window.DeleteEvent() {
         	public boolean onDeleteEvent(Widget source, Event event) {                
                 Gtk.mainQuit();                                                                          
                 return false;
         	}
         });                                                                                          
-                                                                                                         
+        */                                                                                               
         setDefaultSize(1600, 1200);  
         setPosition(WindowPosition.CENTER);                                                              
         showAll();
+	}
+	
+	public void initTable() {
+		/* This is the rather complicated manner in which the table display is initialized */
+		displayTable = new TreeView();
+		ListStore tablemodel;
+		TreeIter row;
+		CellRendererText renderer;
+		TreeViewColumn column;
+		DataColumnString[] colnames = new DataColumnString[data.datatable.get(0).length];
+		
+		//Statusbar statusbar = new Statusbar();
+		
+		for (int i = 0; i < colnames.length; i++) {
+			colnames[i] = new DataColumnString();
+		}
+		
+		tablemodel = new ListStore(colnames);
+		
+		for (int r = 0; r < data.datatable.size()-1; r++) {
+			row = tablemodel.appendRow();
+			for (int c = 0; c < data.datatable.get(r).length; c++) {
+				tablemodel.setValue(row, colnames[c], data.datatable.get(r+1)[c]);
+			}
+		}
+		
+		displayTable = new TreeView(tablemodel);
+		
+		for (int i = 0; i < colnames.length; i++) {
+			column = displayTable.appendColumn();
+			column.setTitle(data.datatable.get(0)[i]);
+			renderer = new CellRendererText(column);
+			renderer.setText(colnames[i]);
+		}
+		
+		displayTable.connect(new TreeView.RowActivated() {
+			public void onRowActivated(TreeView treeview, TreePath treepath, TreeViewColumn treeviewcolumn) {
+				//Do something?
+			}
+		});
+	}
+	
+	public void close() {
+		this.destroy();
 	}
 	
 	public void initUI() {
@@ -46,6 +96,50 @@ public class Inventory extends org.gnome.gtk.Window {
 		imquit.connect(new MenuItem.Activate() {
 			public void onActivate(MenuItem menuItem) {
 				Gtk.mainQuit();
+			}
+		});
+
+		imnew.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem menuItem) {
+				Controller.open("sample.csv");
+			}
+		});
+		
+		imopen.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem menuItem) {
+				JFileChooser fc = new JFileChooser();
+				fc.showOpenDialog(null);
+				try {
+					Controller.open(fc.getSelectedFile().getPath());
+					close();
+				} catch (Exception e) {
+					System.err.println("Error while choosing file: " + e.getMessage());
+				}
+			}
+		});
+		
+		imclose.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem menuItem) {
+				close();
+			}
+		});
+		
+		imsave.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem menuItem) {
+				data.commit();
+			}
+		});
+		
+		imsaveas.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem menuItem) {
+				JFileChooser fc = new JFileChooser();
+				fc.showOpenDialog(null);
+				try {
+					data.name = fc.getSelectedFile().getPath();
+					data.commit();
+				} catch (Exception e) {
+					System.err.println("Error while choosing file: " + e.getMessage());
+				}
 			}
 		});
 		
@@ -94,45 +188,9 @@ public class Inventory extends org.gnome.gtk.Window {
 		menuBar.append(viewItem);
 		menuBar.append(forecastItem);
 		
-		/* This is the rather complicated way in which the datatable is displayed */
-		TreeView displaytable;
-		ListStore tablemodel;
-		TreeIter row;
-		CellRendererText renderer;
-		TreeViewColumn column;
-		DataColumnString[] colnames = new DataColumnString[data.datatable.get(0).length];
-		
-		//Statusbar statusbar = new Statusbar();
-		
-		for (int i = 0; i < colnames.length; i++) {
-			colnames[i] = new DataColumnString();
-		}
-		
-		tablemodel = new ListStore(colnames);
-		
-		for (int r = 0; r < data.datatable.size()-1; r++) {
-			row = tablemodel.appendRow();
-			for (int c = 0; c < data.datatable.get(r).length; c++) {
-				tablemodel.setValue(row, colnames[c], data.datatable.get(r+1)[c]);
-			}
-		}
-		
-		displaytable = new TreeView(tablemodel);
-		
-		for (int i = 0; i < colnames.length; i++) {
-			column = displaytable.appendColumn();
-			column.setTitle(data.datatable.get(0)[i]);
-			renderer = new CellRendererText(column);
-			renderer.setText(colnames[i]);
-		}
-		
-		displaytable.connect(new TreeView.RowActivated() {
-			public void onRowActivated(TreeView treeview, TreePath treepath, TreeViewColumn treeviewcolumn) {
-				//Do something?
-			}
-		});
+		initTable();
 		
 		vbox.packStart(menuBar,  false,  false,  0);
-		vbox.add(displaytable);
+		vbox.add(displayTable);
 	}
 }
