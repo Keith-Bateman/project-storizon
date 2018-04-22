@@ -12,6 +12,8 @@ import db.*;
 public class Inventory extends org.gnome.gtk.Window {
 	public Database data;
 	private TreeView displayTable;
+	private ListStore tablemodel;
+	private final Inventory inv = this;
 	
 	public Inventory(Database db) {
 		data = db;
@@ -19,29 +21,29 @@ public class Inventory extends org.gnome.gtk.Window {
 		setTitle("Inventory");
 		
 		initUI();                                                                                        
-        /*
-        connect(new org.gnome.gtk.Window.DeleteEvent() {
-        	public boolean onDeleteEvent(Widget source, Event event) {                
-                Gtk.mainQuit();                                                                          
-                return false;
-        	}
-        });                                                                                          
-        */                                                                                               
-        setDefaultSize(1600, 1200);  
+                                                                                                       
+        setDefaultSize(800, 600);  
         setPosition(WindowPosition.CENTER);                                                              
         showAll();
+	}
+	
+	public void refresh() {
+		for (Widget w : this.getChildren()) {
+			this.remove(w);
+		}
+		
+		initUI();
+		
+		showAll();
 	}
 	
 	public void initTable() {
 		/* This is the rather complicated manner in which the table display is initialized */
 		displayTable = new TreeView();
-		ListStore tablemodel;
 		TreeIter row;
 		CellRendererText renderer;
 		TreeViewColumn column;
-		DataColumnString[] colnames = new DataColumnString[data.datatable.get(0).length];
-		
-		//Statusbar statusbar = new Statusbar();
+		final DataColumnString[] colnames = new DataColumnString[data.datatable.get(0).length];
 		
 		for (int i = 0; i < colnames.length; i++) {
 			colnames[i] = new DataColumnString();
@@ -67,7 +69,18 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		displayTable.connect(new TreeView.RowActivated() {
 			public void onRowActivated(TreeView treeview, TreePath treepath, TreeViewColumn treeviewcolumn) {
-				//Do something?
+				TreeIter row;
+				String[] info;
+				
+				row = tablemodel.getIter(treepath);
+				
+				info = new String[colnames.length];
+				
+				for (int i = 0; i < colnames.length; i++) {
+					info[i] = tablemodel.getValue(row, colnames[i]);
+				}
+				
+				new Edit(data.getHeaders(), info, inv, tablemodel.getPath(row).getIndices()[0] + 1, false);
 			}
 		});
 	}
@@ -190,7 +203,29 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		initTable();
 		
+		HBox rowManagement = new HBox(false, 0);
+		Button plusButton = new Button(Stock.ADD);
+		Button deleteButton = new Button(Stock.DELETE);
+		
+		plusButton.connect(new Button.Clicked() {
+			public void onClicked(Button b) {
+				new Edit(data.getHeaders(), data.appendRow(), inv, data.dataSize() - 1, true);
+			}
+		});
+		
+		deleteButton.connect(new Button.Clicked() {
+			public void onClicked(Button b) {
+				data.deleteRow(tablemodel.getPath(displayTable.getSelection().getSelected()).getIndices()[0] + 1);
+				refresh();
+			}
+		});
+		
+		rowManagement.add(plusButton);
+		rowManagement.add(deleteButton);
+		rowManagement.setSizeRequest(1600, 50);
+
 		vbox.packStart(menuBar,  false,  false,  0);
 		vbox.add(displayTable);
+		vbox.add(rowManagement);
 	}
 }

@@ -9,7 +9,8 @@ public class Controller {
 	public static void main(String[] args) {
 		Gtk.init(args);  
 		open("sample.csv");
-	    Gtk.main();                                                                                   
+	    Gtk.main();    
+	    System.exit(0);
 	}
 	
 	public static void open(String fileName) {

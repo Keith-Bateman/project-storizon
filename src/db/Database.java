@@ -52,6 +52,10 @@ public class Database {
 		return column;
 	}
 	
+	public String[] getHeaders() {
+		return datatable.get(0);
+	}
+	
 	public String[] getLocations() {
 		return getCol("Location");
 	}
@@ -59,6 +63,35 @@ public class Database {
 	/* Enter a change in the database */
 	public void update(int r, int c, String newval) {
 		datatable.get(r)[c] = newval;
+	}
+	
+	/* Change a full row of the database */
+	public void updateRow(int r, String[] newvals) {
+		datatable.set(r, newvals);
+	}
+	
+	/* Add a new row to the database */
+	public String[] appendRow() {
+		String[] temp = new String[rowSize()];
+		for (int i = 0; i < temp.length; i++) {
+			temp[i] = "";
+		}
+		datatable.add(temp);
+		return datatable.get(dataSize() - 1);
+	}
+	
+	public void deleteRow(int index) {
+		datatable.remove(index);
+	}
+	
+	/* Number of rows */
+	public int dataSize() {
+		return datatable.size();
+	}
+	
+	/* Number of columns */
+	public int rowSize() {
+		return datatable.get(0).length;
 	}
 	
 	/* Commit changes to file. Return false if commit fails, true if it succeeds */
