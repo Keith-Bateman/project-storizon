@@ -215,7 +215,9 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		deleteButton.connect(new Button.Clicked() {
 			public void onClicked(Button b) {
-				data.deleteRow(tablemodel.getPath(displayTable.getSelection().getSelected()).getIndices()[0] + 1);
+				if (displayTable.getSelection().getSelected() != null) {
+					data.deleteRow(tablemodel.getPath(displayTable.getSelection().getSelected()).getIndices()[0] + 1);
+				}
 				refresh();
 			}
 		});
