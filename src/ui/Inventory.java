@@ -26,7 +26,6 @@ along with Storizon. If not, see http://www.gnu.org/licenses/.
 
 package ui;
 
-import javax.swing.JFileChooser;
 import java.util.*;
 
 import org.gnome.gdk.*;
@@ -61,6 +60,15 @@ public class Inventory extends org.gnome.gtk.Window {
 		initUI();
 		
 		showAll();
+	}
+	
+	public int getSelectedRow() {
+		if (displayTable.getSelection().getSelected() != null) {
+			return tablemodel.getPath(displayTable.getSelection().getSelected()).getIndices()[0] + 1;
+		}
+		else {
+			return -1;
+		}
 	}
 	
 	public void initTable() {
@@ -122,7 +130,7 @@ public class Inventory extends org.gnome.gtk.Window {
 		MenuBar menuBar = new MenuBar();
 		ImageMenuItem fileItem = new ImageMenuItem(Stock.FILE);
 		MenuItem viewItem = new MenuItem("View");
-		MenuItem forecastItem = new MenuItem("Forecast");
+		MenuItem calcItem = new MenuItem("Calculate");
 		
 		Menu fileMenu = new Menu();
 		ImageMenuItem imnew = new ImageMenuItem(Stock.NEW);
@@ -146,13 +154,15 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		imopen.connect(new MenuItem.Activate() {
 			public void onActivate(MenuItem menuItem) {
-				JFileChooser fc = new JFileChooser();
-				fc.showOpenDialog(null);
-				try {
-					Controller.open(fc.getSelectedFile().getPath());
-					close();
-				} catch (Exception e) {
-					System.err.println("Error while choosing file: " + e.getMessage());
+				FileChooserDialog dlg;
+				ResponseType rsp;
+				dlg = new FileChooserDialog("Open File", inv, FileChooserAction.OPEN);
+				
+				rsp = dlg.run();
+				dlg.hide();
+				
+				if (rsp == ResponseType.OK) {
+					Controller.open(dlg.getFilename());
 				}
 			}
 		});
@@ -171,13 +181,16 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		imsaveas.connect(new MenuItem.Activate() {
 			public void onActivate(MenuItem menuItem) {
-				JFileChooser fc = new JFileChooser();
-				fc.showOpenDialog(null);
-				try {
-					data.name = fc.getSelectedFile().getPath();
+				FileChooserDialog dlg;
+				ResponseType rsp;
+				dlg = new FileChooserDialog("Save As", inv, FileChooserAction.SAVE);
+				
+				rsp = dlg.run();
+				dlg.hide();
+				
+				if (rsp == ResponseType.OK) {
+					data.name = dlg.getFilename();
 					data.commit();
-				} catch (Exception e) {
-					System.err.println("Error while choosing file: " + e.getMessage());
 				}
 			}
 		});
@@ -223,9 +236,115 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		viewItem.setSubmenu(viewMenu);
 		
+		Menu calcMenu = new Menu();
+		
+		MenuItem amount = new MenuItem("Amount");
+		MenuItem costPer = new MenuItem("Cost per");
+		MenuItem totalCost = new MenuItem("Total Cost");
+		MenuItem beItem = new MenuItem("Breakeven");
+		
+		Menu beMenu = new Menu();
+		
+		MenuItem bePrice = new MenuItem("Price");
+		MenuItem beDemand = new MenuItem("Demand");
+		
+		bePrice.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem m) {
+				try {
+					MessageDialog dlg = new MessageDialog(inv, true, MessageType.QUESTION, ButtonsType.OK,
+							"What are the fixed costs?");
+					
+					Entry e = new Entry();
+					
+					dlg.add(e);
+					dlg.showAll();
+					ResponseType choice = dlg.run();
+					dlg.hide();
+					
+					
+					data.update(getSelectedRow(), data.queryTable("Price"), "" + Equations.breakevenPrice(Float.parseFloat(e.getText()), Float.parseFloat(data.getCosts()[getSelectedRow()]), Integer.parseInt(data.getDemands()[getSelectedRow()])));
+					refresh();
+				}
+				catch (NumberFormatException e) {
+					System.err.println("Fixed costs, cost, or demand not a number");
+				}
+			}
+		});
+		
+		beDemand.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem m) {
+				try {
+					MessageDialog dlg = new MessageDialog(inv, true, MessageType.QUESTION, ButtonsType.OK,
+							"What are the fixed costs?");
+					
+					Entry e = new Entry();
+					
+					dlg.add(e);
+					dlg.showAll();
+					ResponseType choice = dlg.run();
+					dlg.hide();
+					
+					data.update(getSelectedRow(), data.queryTable("Demand"), "" + Equations.breakevenAmount(Float.parseFloat(e.getText()), Float.parseFloat(data.getCosts()[getSelectedRow()]), Float.parseFloat(data.getPrices()[getSelectedRow()])));
+					refresh();
+				}
+				catch (NumberFormatException e) {
+					System.err.println("Fixed costs, price, or cost not a number");
+				}
+			}
+		});
+		
+		beMenu.append(bePrice);
+		beMenu.append(beDemand);
+		beItem.setSubmenu(beMenu);
+		
+		amount.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem m) {
+				try {
+					data.update(getSelectedRow(), data.queryTable("Amount"), "" + Equations.amount(Float.parseFloat(data.getCosts()[getSelectedRow()]), Float.parseFloat(data.getTotals()[getSelectedRow()])));
+					refresh();
+				}
+				catch (NumberFormatException e) {
+					System.err.println("Amount or cost not a number");
+				}
+			}
+		});
+
+		costPer.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem m) {
+				try {
+					data.update(getSelectedRow(), data.queryTable("Cost per"), "" + Equations.cost(Integer.parseInt(data.getAmounts()[getSelectedRow()]), Float.parseFloat(data.getTotals()[getSelectedRow()])));
+					refresh();
+				}
+				catch (NumberFormatException e) {
+					System.err.println("Amount or total cost not a number");
+				}
+			}
+		});
+		
+		totalCost.connect(new MenuItem.Activate() {
+			public void onActivate(MenuItem m) {
+				if (getSelectedRow() != -1) {
+					try {
+						data.update(getSelectedRow(), data.queryTable("Total Cost"), "" + Equations.totalCost(Float.parseFloat(data.getCosts()[getSelectedRow()]), Integer.parseInt(data.getAmounts()[getSelectedRow()])));
+						refresh();
+					}
+					catch (NumberFormatException e) {
+						System.err.println("Total cost or cost not a number");
+					}
+				}
+			}
+		});
+		
+		calcMenu.append(amount);
+		calcMenu.append(costPer);
+		calcMenu.append(totalCost);
+		calcMenu.append(beItem);
+		
+		calcItem.setSubmenu(calcMenu);
+		
 		menuBar.append(fileItem);
 		menuBar.append(viewItem);
-		menuBar.append(forecastItem);
+		menuBar.append(calcItem);
 		
 		initTable();
 		
@@ -241,8 +360,8 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		deleteButton.connect(new Button.Clicked() {
 			public void onClicked(Button b) {
-				if (displayTable.getSelection().getSelected() != null) {
-					data.deleteRow(tablemodel.getPath(displayTable.getSelection().getSelected()).getIndices()[0] + 1);
+				if (getSelectedRow() != -1) {
+					data.deleteRow(getSelectedRow());
 				}
 				refresh();
 			}

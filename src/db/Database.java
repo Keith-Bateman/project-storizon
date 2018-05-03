@@ -56,7 +56,7 @@ public class Database {
 	}
 	
 	/* Returns -1 for not found and index if found */
-	private int queryTable(String query) {
+	public int queryTable(String query) {
 		String[] headers = datatable.get(0);
 		for (int i = 0; i < headers.length; i++) {
 			if (headers[i].equals(query)) {
@@ -72,7 +72,7 @@ public class Database {
 		if ((colIndex = queryTable(colName)) == -1) {
 			return null;
 		}
-		for (int i = 0; i < datatable.size(); i++) {
+		for (int i = 1; i < datatable.size(); i++) {
 			column[i] = datatable.get(i)[colIndex];
 		}
 		return column;
@@ -84,6 +84,26 @@ public class Database {
 	
 	public String[] getLocations() {
 		return getCol("Location");
+	}
+	
+	public String[] getCosts() {
+		return getCol("Cost per");
+	}
+	
+	public String[] getAmounts() {
+		return getCol("Amount");
+	}
+	
+	public String[] getTotals() {
+		return getCol("Total Cost");
+	}
+	
+	public String[] getPrices() {
+		return getCol("Price");
+	}
+	
+	public String[] getDemands() {
+		return getCol("Demand");
 	}
 	
 	/* Enter a change in the database */
