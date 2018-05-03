@@ -26,13 +26,17 @@ along with Storizon. If not, see http://www.gnu.org/licenses/.
 
 package ctrl;
 
+import java.util.*;
 import org.gnome.gdk.*;                                                                                  
 import org.gnome.gtk.*;
 import ui.*;
 import db.*;
 
-public class Controller {                                                                                
+public class Controller {
+	private static ArrayList<Inventory> windows;
+	
 	public static void main(String[] args) {
+		windows = new ArrayList<Inventory>();
 		Gtk.init(args);  
 		open("sample.csv");
 	    Gtk.main();    
@@ -40,6 +44,13 @@ public class Controller {
 	}
 	
 	public static void open(String fileName) {
-		new ui.Inventory(new db.Database(fileName));
+		windows.add(new ui.Inventory(new db.Database(fileName)));
+	}
+	
+	public static void close(Inventory i) {
+		windows.remove(i);
+		if (windows.size() == 0) {
+			System.exit(0);
+		}
 	}
 }

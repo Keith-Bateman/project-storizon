@@ -45,8 +45,15 @@ public class Inventory extends org.gnome.gtk.Window {
 		
 		setTitle("Inventory");
 		
-		initUI();                                                                                        
-                                                                                                       
+		initUI();  
+		
+		connect (new org.gnome.gtk.Window.DeleteEvent() {
+			public boolean onDeleteEvent(Widget source, Event event) {
+				inv.close();
+				return false;
+			}	
+		});
+		                                                                                               
         setDefaultSize(800, 600);  
         setPosition(WindowPosition.CENTER);                                                              
         showAll();
@@ -121,6 +128,7 @@ public class Inventory extends org.gnome.gtk.Window {
 	
 	public void close() {
 		this.destroy();
+		Controller.close(inv);
 	}
 	
 	public void initUI() {
@@ -227,11 +235,11 @@ public class Inventory extends org.gnome.gtk.Window {
 			}
 		});
 		
-		viewMenu.append(location);
-		viewMenu.append(new SeparatorMenuItem());
-		viewMenu.append(stock);
-		viewMenu.append(shipping);
-		viewMenu.append(new SeparatorMenuItem());
+		//viewMenu.append(location);
+		//viewMenu.append(new SeparatorMenuItem());
+		//viewMenu.append(stock);
+		//viewMenu.append(shipping);
+		//viewMenu.append(new SeparatorMenuItem());
 		viewMenu.append(fullscreen);
 		
 		viewItem.setSubmenu(viewMenu);

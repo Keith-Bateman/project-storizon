@@ -1,5 +1,5 @@
 Location,Category,Shipping,Good/Unit,Amount,Cost per,Total Cost,Price,Demand,Duration,Ship Date,Arrival Date,ID
-Chicago,Raw,Cotton,-,10000,0.05,500,-,1000,-,-,3/1/18,R300-c00-018
+Chicago,Raw,-,Cotton,10000,0.05,500,-,1000,-,-,3/1/18,R300-c00-018
 Memphis,Raw,Chicago,Cotton,20000,0.05,1000,-,-,1,4/1/18,4/2/18,R401-M02-018
 Memphis,Fuel,Chicago,Miles,533,1.38,735.54,-,-,1,4/1/18,4/2/18,F401-M02-018
 Wisconsin,Error,Chicago,Cotton,10000,0.05,500,-,2000,2,4/2/18,4/4/18,E420-W04-108
